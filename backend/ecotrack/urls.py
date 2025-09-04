@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import JsonResponse
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
@@ -19,7 +20,20 @@ schema_view = get_schema_view(
    permission_classes=(permissions.AllowAny,),
 )
 
+def api_root(request):
+    return JsonResponse({
+        'message': 'EcoTrack API is running',
+        'version': 'v1',
+        'endpoints': {
+            'auth': '/api/v1/auth/',
+            'activities': '/api/v1/activities/',
+            'swagger': '/swagger/',
+            'admin': '/admin/'
+        }
+    })
+
 urlpatterns = [
+    path('', api_root, name='api-root'),
     path('admin/', admin.site.urls),
     
     # API Documentation
@@ -32,7 +46,7 @@ urlpatterns = [
     path('api/v1/activities/', include('activities.urls')),
     
     # Health check
-    path('health/', lambda request: __import__('django.http').HttpResponse('OK')),
+    path('health/', lambda request: JsonResponse({'status': 'OK'})),
 ]
 
 if settings.DEBUG:
