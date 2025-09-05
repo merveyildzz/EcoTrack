@@ -8,6 +8,9 @@ const Register = () => import('@/views/Register.vue')
 const Activities = () => import('@/views/Activities.vue')
 const LogActivity = () => import('@/views/LogActivity.vue')
 const Challenges = () => import('@/views/Challenges.vue')
+const Leaderboards = () => import('@/views/Leaderboards.vue')
+const Badges = () => import('@/views/Badges.vue')
+const Social = () => import('@/views/Social.vue')
 const Profile = () => import('@/views/Profile.vue')
 
 const routes = [
@@ -49,6 +52,24 @@ const routes = [
     path: '/challenges',
     name: 'Challenges',
     component: Challenges,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/leaderboards',
+    name: 'Leaderboards',
+    component: Leaderboards,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/badges',
+    name: 'Badges',
+    component: Badges,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/social',
+    name: 'Social',
+    component: Social,
     meta: { requiresAuth: true }
   },
   {

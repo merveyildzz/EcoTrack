@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     
+    'channels',
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
@@ -37,6 +38,7 @@ INSTALLED_APPS = [
     'analytics',
     'corporate',
     'ai_recommendations',
+    'social',
 ]
 
 MIDDLEWARE = [
@@ -70,6 +72,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'ecotrack.wsgi.application'
+ASGI_APPLICATION = 'ecotrack.asgi.application'
+
+# Channels configuration
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [env('REDIS_URL', default='redis://localhost:6379/0')],
+        },
+    },
+}
 
 DATABASES = {
     'default': env.db('DATABASE_URL', default='sqlite:///db.sqlite3')

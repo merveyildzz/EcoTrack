@@ -35,6 +35,27 @@
             >
               Challenges
             </router-link>
+            <router-link 
+              to="/leaderboards" 
+              class="text-gray-700 hover:text-primary-600 px-3 py-2 text-sm font-medium transition-colors"
+              :class="{ 'text-primary-600 border-b-2 border-primary-600': $route.path === '/leaderboards' }"
+            >
+              Leaderboards
+            </router-link>
+            <router-link 
+              to="/badges" 
+              class="text-gray-700 hover:text-primary-600 px-3 py-2 text-sm font-medium transition-colors"
+              :class="{ 'text-primary-600 border-b-2 border-primary-600': $route.path === '/badges' }"
+            >
+              Badges
+            </router-link>
+            <router-link 
+              to="/social" 
+              class="text-gray-700 hover:text-primary-600 px-3 py-2 text-sm font-medium transition-colors"
+              :class="{ 'text-primary-600 border-b-2 border-primary-600': $route.path === '/social' }"
+            >
+              Social
+            </router-link>
           </div>
           
           <div class="flex items-center space-x-4">

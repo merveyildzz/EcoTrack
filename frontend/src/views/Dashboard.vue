@@ -220,6 +220,111 @@
             </div>
           </div>
 
+          <!-- Social Stats -->
+          <div class="card">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Your Achievements</h3>
+            <div class="space-y-4">
+              <!-- Current Rank -->
+              <div class="flex items-center justify-between p-3 bg-primary-50 rounded-lg">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
+                    <span class="text-primary-700">🏆</span>
+                  </div>
+                  <div>
+                    <p class="font-medium text-gray-900">Global Rank</p>
+                    <p class="text-sm text-gray-600">#{{ socialStats?.global_rank || '---' }}</p>
+                  </div>
+                </div>
+                <router-link to="/leaderboards" class="text-sm text-primary-600 hover:text-primary-700">
+                  View All
+                </router-link>
+              </div>
+
+              <!-- Badges -->
+              <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                    <span class="text-yellow-700">🏅</span>
+                  </div>
+                  <div>
+                    <p class="font-medium text-gray-900">Badges Earned</p>
+                    <p class="text-sm text-gray-600">{{ socialStats?.badges_earned || 0 }} total</p>
+                  </div>
+                </div>
+                <router-link to="/badges" class="text-sm text-primary-600 hover:text-primary-700">
+                  View All
+                </router-link>
+              </div>
+
+              <!-- Current Streak -->
+              <div class="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <span class="text-orange-700">🔥</span>
+                  </div>
+                  <div>
+                    <p class="font-medium text-gray-900">Daily Streak</p>
+                    <p class="text-sm text-gray-600">{{ socialStats?.current_streak || 0 }} days</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Achievements -->
+          <div v-if="recentBadges?.length > 0" class="card">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Achievements</h3>
+            <div class="space-y-3">
+              <div 
+                v-for="badge in recentBadges.slice(0, 3)" 
+                :key="badge.id"
+                class="flex items-center space-x-3 p-2 bg-gray-50 rounded-lg"
+              >
+                <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+                  <span class="text-sm">🏆</span>
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-gray-900">{{ badge.badge.name }}</p>
+                  <p class="text-xs text-gray-500">{{ formatDateShort(badge.earned_at) }}</p>
+                </div>
+                <span class="text-xs text-primary-600 font-medium">+{{ badge.badge.points }}pts</span>
+              </div>
+            </div>
+            <router-link to="/badges" class="block text-center text-sm text-primary-600 hover:text-primary-700 mt-3">
+              View All Badges
+            </router-link>
+          </div>
+
+          <!-- Active Challenges -->
+          <div v-if="activeChallenges?.length > 0" class="card">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Active Challenges</h3>
+            <div class="space-y-3">
+              <div 
+                v-for="challenge in activeChallenges.slice(0, 2)" 
+                :key="challenge.id"
+                class="p-3 bg-green-50 rounded-lg border border-green-200"
+              >
+                <div class="flex items-center justify-between mb-2">
+                  <h4 class="font-medium text-gray-900 text-sm">{{ challenge.challenge.title }}</h4>
+                  <span class="text-xs text-green-600">{{ challenge.progress_percentage.toFixed(0) }}%</span>
+                </div>
+                <div class="w-full bg-green-200 rounded-full h-2">
+                  <div 
+                    class="bg-green-600 h-2 rounded-full transition-all duration-500"
+                    :style="{ width: `${challenge.progress_percentage}%` }"
+                  ></div>
+                </div>
+                <p class="text-xs text-gray-600 mt-2">
+                  {{ challenge.current_progress.toFixed(1) }}/{{ challenge.challenge.goal_value }} 
+                  {{ challenge.challenge.goal_unit }}
+                </p>
+              </div>
+            </div>
+            <router-link to="/challenges" class="block text-center text-sm text-primary-600 hover:text-primary-700 mt-3">
+              View All Challenges
+            </router-link>
+          </div>
+
           <!-- Environmental Tip -->
           <div class="card bg-gradient-to-r from-green-50 to-primary-50 border-green-200">
             <div class="flex items-start space-x-3">
@@ -245,6 +350,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useActivitiesStore } from '@/stores/activities'
 import { useNotificationStore } from '@/stores/notifications'
+import socialApi from '@/services/social'
 import TrendChart from '@/components/TrendChart.vue'
 import CategoryChart from '@/components/CategoryChart.vue'
 
@@ -253,6 +359,11 @@ const notificationStore = useNotificationStore()
 
 const isLoading = ref(true)
 const chartPeriod = ref('7D')
+
+// Social data
+const socialStats = ref(null)
+const recentBadges = ref([])
+const activeChallenges = ref([])
 
 const dashboardData = computed(() => activitiesStore.dashboardData)
 const recentActivities = computed(() => dashboardData.value?.recent_activities || [])
@@ -287,6 +398,18 @@ const formatTime = (timestamp) => {
     hour: '2-digit', 
     minute: '2-digit' 
   })
+}
+
+const formatDateShort = (dateString) => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffInDays = Math.floor((now - date) / (1000 * 60 * 60 * 24))
+  
+  if (diffInDays === 0) return 'Today'
+  if (diffInDays === 1) return 'Yesterday'
+  if (diffInDays < 7) return `${diffInDays}d ago`
+  return date.toLocaleDateString()
 }
 
 const getCategoryIcon = (categoryType) => {
@@ -328,9 +451,29 @@ const refreshData = async () => {
   }
 }
 
+const loadSocialData = async () => {
+  try {
+    const dashboard = await socialApi.getUserDashboard()
+    socialStats.value = dashboard.stats
+    recentBadges.value = dashboard.recent_badges || []
+    activeChallenges.value = dashboard.active_challenges || []
+    
+    // Add mock global rank for demo
+    if (socialStats.value) {
+      socialStats.value.global_rank = Math.floor(Math.random() * 1000) + 1
+    }
+  } catch (error) {
+    console.error('Error loading social data:', error)
+    // Don't show error notification for social data as it's not critical
+  }
+}
+
 onMounted(async () => {
   try {
-    await activitiesStore.fetchDashboard()
+    await Promise.all([
+      activitiesStore.fetchDashboard(),
+      loadSocialData()
+    ])
   } catch (error) {
     notificationStore.error('Failed to load dashboard data')
   } finally {
