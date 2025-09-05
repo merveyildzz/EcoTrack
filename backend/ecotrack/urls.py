@@ -29,6 +29,7 @@ def api_root(request):
             'activities': '/api/v1/activities/',
             'ai': '/api/v1/ai/',
             'social': '/api/v1/social/',
+            'corporate': '/api/v1/corporate/',
             'swagger': '/swagger/',
             'admin': '/admin/'
         }
@@ -48,6 +49,7 @@ urlpatterns = [
     path('api/v1/activities/', include('activities.urls')),
     path('api/v1/ai/', include('ai_recommendations.urls')),
     path('api/v1/social/', include('social.urls')),
+    path('api/v1/corporate/', include('corporate.urls')),
     
     # Health check
     path('health/', lambda request: JsonResponse({'status': 'OK'})),

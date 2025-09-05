@@ -247,7 +247,7 @@
 
 <script>
 import { ref, computed, onMounted, watch } from 'vue'
-import { PlusIcon, UploadIcon } from '@heroicons/vue/outline'
+import { PlusIcon, ArrowUpTrayIcon as UploadIcon } from '@heroicons/vue/24/outline'
 import OrganizationModal from './OrganizationModal.vue'
 import BulkImportModal from './BulkImportModal.vue'
 import { enterpriseService } from '@/services/enterprise'
@@ -405,4 +405,3 @@ export default {
   }
 }
 </script>
-</template>

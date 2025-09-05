@@ -185,7 +185,7 @@
 
 <script>
 import { ref, watch } from 'vue'
-import { XIcon } from '@heroicons/vue/outline'
+import { XMarkIcon as XIcon } from '@heroicons/vue/24/outline'
 import { enterpriseService } from '@/services/enterprise'
 import { useToast } from '@/composables/useToast'
 
@@ -251,4 +251,3 @@ export default {
   }
 }
 </script>
-</template>

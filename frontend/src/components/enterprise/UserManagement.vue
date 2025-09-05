@@ -286,7 +286,7 @@
 
 <script>
 import { ref, computed, onMounted, watch } from 'vue'
-import { UserAddIcon, UploadIcon, DownloadIcon } from '@heroicons/vue/outline'
+import { UserPlusIcon as UserAddIcon, ArrowUpTrayIcon as UploadIcon, ArrowDownTrayIcon as DownloadIcon } from '@heroicons/vue/24/outline'
 import UserInviteModal from './UserInviteModal.vue'
 import UserEditModal from './UserEditModal.vue'
 import BulkImportModal from './BulkImportModal.vue'
@@ -499,4 +499,3 @@ export default {
   }
 }
 </script>
-</template>

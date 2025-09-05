@@ -215,10 +215,10 @@ import {
   ChartBarIcon,
   UsersIcon,
   CogIcon,
-  OfficeBuildingIcon,
+  BuildingOfficeIcon as OfficeBuildingIcon,
   UserGroupIcon,
-  RefreshIcon
-} from '@heroicons/vue/outline'
+  ArrowPathIcon as RefreshIcon
+} from '@heroicons/vue/24/outline'
 import OrganizationManagement from '@/components/enterprise/OrganizationManagement.vue'
 import UserManagement from '@/components/enterprise/UserManagement.vue'
 import TeamManagement from '@/components/enterprise/TeamManagement.vue'

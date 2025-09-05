@@ -157,7 +157,7 @@
 
 <script>
 import { ref } from 'vue'
-import { UploadIcon } from '@heroicons/vue/outline'
+import { ArrowUpTrayIcon as UploadIcon } from '@heroicons/vue/24/outline'
 import { enterpriseService } from '@/services/enterprise'
 import { useToast } from '@/composables/useToast'
 
@@ -273,4 +273,3 @@ export default {
   }
 }
 </script>
-</template>

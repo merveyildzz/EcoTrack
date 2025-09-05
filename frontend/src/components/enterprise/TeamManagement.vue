@@ -265,7 +265,7 @@
 
 <script>
 import { ref, computed, onMounted, watch } from 'vue'
-import { PlusIcon, UploadIcon } from '@heroicons/vue/outline'
+import { PlusIcon, ArrowUpTrayIcon as UploadIcon } from '@heroicons/vue/24/outline'
 import TeamModal from './TeamModal.vue'
 import TeamDetailModal from './TeamDetailModal.vue'
 import BulkImportModal from './BulkImportModal.vue'
