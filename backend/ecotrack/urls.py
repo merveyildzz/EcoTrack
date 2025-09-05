@@ -44,6 +44,7 @@ urlpatterns = [
     # API endpoints
     path('api/v1/auth/', include('users.urls')),
     path('api/v1/activities/', include('activities.urls')),
+    path('api/v1/ai/', include('ai_recommendations.urls')),
     
     # Health check
     path('health/', lambda request: JsonResponse({'status': 'OK'})),

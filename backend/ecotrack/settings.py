@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'carbon',
     'analytics',
     'corporate',
+    'ai_recommendations',
 ]
 
 MIDDLEWARE = [
