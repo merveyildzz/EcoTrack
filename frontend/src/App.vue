@@ -5,7 +5,7 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
           <div class="flex items-center">
-            <router-link to="/dashboard" class="flex items-center space-x-2">
+            <router-link :to="isAdmin ? '/admin' : '/dashboard'" class="flex items-center space-x-2">
               <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
                 <span class="text-white font-bold text-sm">🌱</span>
               </div>
@@ -15,11 +15,11 @@
           
           <div class="hidden md:flex items-center space-x-6">
             <router-link 
-              to="/dashboard" 
+              :to="isAdmin ? '/admin' : '/dashboard'" 
               class="text-gray-700 hover:text-primary-600 px-3 py-2 text-sm font-medium transition-colors"
-              :class="{ 'text-primary-600 border-b-2 border-primary-600': $route.path === '/dashboard' }"
+              :class="{ 'text-primary-600 border-b-2 border-primary-600': ($route.path === '/dashboard' && !isAdmin) || ($route.path === '/admin' && isAdmin) }"
             >
-              Dashboard
+              {{ isAdmin ? 'Admin' : 'Dashboard' }}
             </router-link>
             <router-link 
               to="/activities" 
@@ -56,6 +56,14 @@
             >
               Social
             </router-link>
+            <router-link 
+              v-if="isAdmin"
+              to="/enterprise" 
+              class="text-gray-700 hover:text-primary-600 px-3 py-2 text-sm font-medium transition-colors"
+              :class="{ 'text-primary-600 border-b-2 border-primary-600': $route.path === '/enterprise' }"
+            >
+              Enterprise
+            </router-link>
           </div>
           
           <div class="flex items-center space-x-4">
@@ -73,10 +81,10 @@
       <div class="md:hidden border-t border-gray-200 bg-white">
         <div class="px-4 py-2 space-y-1">
           <router-link 
-            to="/dashboard" 
+            :to="isAdmin ? '/admin' : '/dashboard'"
             class="block px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md"
           >
-            📊 Dashboard
+            📊 {{ isAdmin ? 'Admin' : 'Dashboard' }}
           </router-link>
           <router-link 
             to="/activities" 
@@ -149,6 +157,10 @@ const isAuthPage = computed(() => {
 
 const userInitial = computed(() => {
   return authStore.user?.email?.[0]?.toUpperCase() || 'U'
+})
+
+const isAdmin = computed(() => {
+  return authStore.user?.is_staff || authStore.user?.is_superuser
 })
 
 const notifications = computed(() => notificationStore.notifications)

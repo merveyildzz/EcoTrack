@@ -12,6 +12,8 @@ const Leaderboards = () => import('@/views/Leaderboards.vue')
 const Badges = () => import('@/views/Badges.vue')
 const Social = () => import('@/views/Social.vue')
 const Profile = () => import('@/views/Profile.vue')
+const Enterprise = () => import('@/views/Enterprise.vue')
+const AdminDashboard = () => import('@/views/AdminDashboard.vue')
 
 const routes = [
   {
@@ -77,6 +79,18 @@ const routes = [
     name: 'Profile',
     component: Profile,
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin',
+    name: 'AdminDashboard',
+    component: AdminDashboard,
+    meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/enterprise',
+    name: 'Enterprise',
+    component: Enterprise,
+    meta: { requiresAuth: true, requiresAdmin: true }
   }
 ]
 
@@ -88,11 +102,22 @@ const router = createRouter({
 // Navigation guards
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
+  const isAdmin = authStore.user?.is_staff || authStore.user?.is_superuser
   
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next('/login')
   } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
+    // Redirect authenticated users to appropriate dashboard
+    next(isAdmin ? '/admin' : '/dashboard')
+  } else if (to.meta.requiresAdmin && !isAdmin) {
+    // Redirect non-admin users away from admin routes
     next('/dashboard')
+  } else if (to.path === '/dashboard' && isAdmin) {
+    // Redirect admins to admin dashboard
+    next('/admin')
+  } else if (to.path === '/' && authStore.isAuthenticated) {
+    // Redirect root to appropriate dashboard
+    next(isAdmin ? '/admin' : '/dashboard')
   } else {
     next()
   }
