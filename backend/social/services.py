@@ -505,7 +505,7 @@ class SocialService:
             activities = Activity.objects.filter(user=user)
             total_activities = activities.count()
             total_co2_saved = float(activities.aggregate(
-                total=models.Sum('co2_saved')
+                total=models.Sum('co2_kg')
             )['total'] or 0)
             
             # Calculate time-based statistics
@@ -516,15 +516,15 @@ class SocialService:
             
             weekly_co2 = float(activities.filter(
                 created_at__gte=week_start
-            ).aggregate(total=models.Sum('co2_saved'))['total'] or 0)
+            ).aggregate(total=models.Sum('co2_kg'))['total'] or 0)
             
             monthly_co2 = float(activities.filter(
                 created_at__gte=month_start
-            ).aggregate(total=models.Sum('co2_saved'))['total'] or 0)
+            ).aggregate(total=models.Sum('co2_kg'))['total'] or 0)
             
             yearly_co2 = float(activities.filter(
                 created_at__gte=year_start
-            ).aggregate(total=models.Sum('co2_saved'))['total'] or 0)
+            ).aggregate(total=models.Sum('co2_kg'))['total'] or 0)
             
             # Update stats
             stats.total_activities = total_activities
