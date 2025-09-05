@@ -13,8 +13,10 @@ router.register(r'challenge-participants', views.ChallengeParticipantViewSet, ba
 
 # Define URL patterns
 urlpatterns = [
-    # Dashboard endpoint
+    # Dashboard endpoints
     path('dashboard/', views.dashboard_stats, name='corporate-dashboard'),
+    path('stats/', views.organization_stats, name='corporate-stats'),
+    path('settings/', views.organization_settings, name='corporate-settings'),
     
     # Include all the router URLs
     path('', include(router.urls)),

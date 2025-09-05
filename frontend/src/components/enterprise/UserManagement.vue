@@ -298,7 +298,10 @@ export default {
   components: {
     UserInviteModal,
     UserEditModal,
-    BulkImportModal
+    BulkImportModal,
+    UserAddIcon,
+    UploadIcon,
+    DownloadIcon
   },
   setup() {
     const { showToast } = useToast()

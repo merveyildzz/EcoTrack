@@ -230,7 +230,13 @@ export default {
   components: {
     OrganizationManagement,
     UserManagement,
-    TeamManagement
+    TeamManagement,
+    ChartBarIcon,
+    UsersIcon,
+    CogIcon,
+    OfficeBuildingIcon,
+    UserGroupIcon,
+    RefreshIcon
   },
   setup() {
     const { showToast } = useToast()

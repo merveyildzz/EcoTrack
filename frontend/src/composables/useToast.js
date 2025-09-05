@@ -41,6 +41,7 @@ export function useToast() {
     success,
     error,
     warning,
-    info
+    info,
+    showToast: addToast  // Add alias for backwards compatibility
   }
 }

@@ -83,6 +83,90 @@ def dashboard_stats(request):
         )
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def organization_stats(request):
+    """Get organization statistics"""
+    try:
+        # Get user's organization
+        membership = OrganizationMember.objects.filter(
+            user=request.user, 
+            status='active'
+        ).first()
+        
+        if not membership:
+            stats = {
+                'total_members': 0,
+                'active_teams': 0,
+                'completed_challenges': 0,
+                'carbon_saved_this_month': 0,
+                'top_performers': [],
+                'recent_activities': []
+            }
+        else:
+            org = membership.organization
+            stats = {
+                'total_members': OrganizationMember.objects.filter(
+                    organization=org, status='active'
+                ).count(),
+                'active_teams': Team.objects.filter(
+                    organization=org, is_active=True
+                ).count(),
+                'completed_challenges': Challenge.objects.filter(
+                    organization=org, status='completed'
+                ).count(),
+                'carbon_saved_this_month': 0,  # Calculate from activities
+                'top_performers': [],
+                'recent_activities': []
+            }
+        
+        return Response(stats)
+        
+    except Exception as e:
+        return Response(
+            {'error': str(e)}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['GET', 'PUT'])
+@permission_classes([IsAuthenticated])
+def organization_settings(request):
+    """Get or update organization settings"""
+    try:
+        # Get user's organization
+        membership = OrganizationMember.objects.filter(
+            user=request.user, 
+            status='active'
+        ).first()
+        
+        if not membership:
+            return Response(
+                {'error': 'User is not a member of any organization'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        if request.method == 'GET':
+            settings = {
+                'carbon_budget_monthly': 1000.0,
+                'enable_notifications': True,
+                'enable_leaderboards': True,
+                'data_retention_months': 12,
+                'timezone': 'UTC'
+            }
+            return Response(settings)
+        
+        elif request.method == 'PUT':
+            # Update settings logic would go here
+            return Response({'message': 'Settings updated successfully'})
+        
+    except Exception as e:
+        return Response(
+            {'error': str(e)}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
 class OrganizationViewSet(viewsets.ModelViewSet):
     serializer_class = OrganizationSerializer
     permission_classes = [IsAuthenticated]

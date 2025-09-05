@@ -277,7 +277,9 @@ export default {
   components: {
     TeamModal,
     TeamDetailModal,
-    BulkImportModal
+    BulkImportModal,
+    PlusIcon,
+    UploadIcon
   },
   setup() {
     const { showToast } = useToast()
