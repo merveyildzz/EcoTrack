@@ -67,7 +67,21 @@
           </div>
           
           <div class="flex items-center space-x-4">
-            <button @click="logout" class="text-gray-700 hover:text-primary-600 text-sm font-medium">
+            <!-- Mobile menu button -->
+            <button 
+              @click="mobileMenuOpen = !mobileMenuOpen"
+              class="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            >
+              <svg v-if="!mobileMenuOpen" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+              <svg v-else class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
+            <!-- Desktop logout button -->
+            <button @click="logout" class="hidden md:block text-gray-700 hover:text-primary-600 text-sm font-medium">
               Sign Out
             </button>
             <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
@@ -78,26 +92,72 @@
       </div>
       
       <!-- Mobile Navigation -->
-      <div class="md:hidden border-t border-gray-200 bg-white">
+      <div v-show="mobileMenuOpen" class="md:hidden border-t border-gray-200 bg-white">
         <div class="px-4 py-2 space-y-1">
           <router-link 
             :to="isAdmin ? '/admin' : '/dashboard'"
+            @click="mobileMenuOpen = false"
             class="block px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md"
+            :class="{ 'text-primary-600 bg-primary-50': ($route.path === '/dashboard' && !isAdmin) || ($route.path === '/admin' && isAdmin) }"
           >
             📊 {{ isAdmin ? 'Admin' : 'Dashboard' }}
           </router-link>
           <router-link 
             to="/activities" 
+            @click="mobileMenuOpen = false"
             class="block px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md"
+            :class="{ 'text-primary-600 bg-primary-50': $route.path.startsWith('/activities') }"
           >
             📝 Activities
           </router-link>
           <router-link 
             to="/challenges" 
+            @click="mobileMenuOpen = false"
             class="block px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md"
+            :class="{ 'text-primary-600 bg-primary-50': $route.path === '/challenges' }"
           >
             🏆 Challenges
           </router-link>
+          <router-link 
+            to="/leaderboards" 
+            @click="mobileMenuOpen = false"
+            class="block px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md"
+            :class="{ 'text-primary-600 bg-primary-50': $route.path === '/leaderboards' }"
+          >
+            🏅 Leaderboards
+          </router-link>
+          <router-link 
+            to="/badges" 
+            @click="mobileMenuOpen = false"
+            class="block px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md"
+            :class="{ 'text-primary-600 bg-primary-50': $route.path === '/badges' }"
+          >
+            🎖️ Badges
+          </router-link>
+          <router-link 
+            to="/social" 
+            @click="mobileMenuOpen = false"
+            class="block px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md"
+            :class="{ 'text-primary-600 bg-primary-50': $route.path === '/social' }"
+          >
+            👥 Social
+          </router-link>
+          <router-link 
+            v-if="isAdmin"
+            to="/enterprise" 
+            @click="mobileMenuOpen = false"
+            class="block px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md"
+            :class="{ 'text-primary-600 bg-primary-50': $route.path === '/enterprise' }"
+          >
+            🏢 Enterprise
+          </router-link>
+          <!-- Mobile logout button -->
+          <button 
+            @click="logout" 
+            class="block w-full text-left px-3 py-2 text-sm font-medium text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-md border-t border-gray-200 mt-2 pt-3"
+          >
+            🚪 Sign Out
+          </button>
         </div>
       </div>
     </nav>
@@ -141,7 +201,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notifications'
@@ -150,6 +210,8 @@ const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 const notificationStore = useNotificationStore()
+
+const mobileMenuOpen = ref(false)
 
 const isAuthPage = computed(() => {
   return ['/login', '/register'].includes(route.path)
