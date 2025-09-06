@@ -28,8 +28,11 @@ export const aiService = {
     return response.data
   },
 
-  async generateRecommendation(data) {
-    const response = await api.post('/ai/recommendations/generate/', data)
+  async generateRecommendation(type = 'daily_tip', forceRegenerate = false) {
+    const response = await api.post('/ai/recommendations/generate/', {
+      recommendation_type: type,
+      force_regenerate: forceRegenerate
+    })
     return response.data
   },
 
@@ -43,8 +46,11 @@ export const aiService = {
     return response.data
   },
 
-  async submitFeedback(id, feedback) {
-    const response = await api.post(`/ai/recommendations/${id}/feedback/`, feedback)
+  async submitFeedback(id, rating, feedback = '') {
+    const response = await api.post(`/ai/recommendations/${id}/feedback/`, {
+      rating,
+      feedback
+    })
     return response.data
   },
 

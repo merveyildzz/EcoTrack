@@ -1,5 +1,47 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Community Navigation -->
+    <div class="mb-6">
+      <nav class="flex space-x-1 bg-gray-100 rounded-lg p-1" aria-label="Community sections">
+        <router-link
+          to="/leaderboards"
+          class="flex-1 text-center px-4 py-2 text-sm font-medium rounded-md transition-colors"
+          :class="$route.path === '/leaderboards' 
+            ? 'bg-white text-gray-900 shadow-sm' 
+            : 'text-gray-600 hover:text-gray-900'"
+        >
+          🏅 Leaderboards
+        </router-link>
+        <router-link
+          to="/challenges"
+          class="flex-1 text-center px-4 py-2 text-sm font-medium rounded-md transition-colors"
+          :class="$route.path === '/challenges' 
+            ? 'bg-white text-gray-900 shadow-sm' 
+            : 'text-gray-600 hover:text-gray-900'"
+        >
+          🏆 Challenges
+        </router-link>
+        <router-link
+          to="/badges"
+          class="flex-1 text-center px-4 py-2 text-sm font-medium rounded-md transition-colors"
+          :class="$route.path === '/badges' 
+            ? 'bg-white text-gray-900 shadow-sm' 
+            : 'text-gray-600 hover:text-gray-900'"
+        >
+          🎖️ Badges
+        </router-link>
+        <router-link
+          to="/social"
+          class="flex-1 text-center px-4 py-2 text-sm font-medium rounded-md transition-colors"
+          :class="$route.path === '/social' 
+            ? 'bg-white text-gray-900 shadow-sm' 
+            : 'text-gray-600 hover:text-gray-900'"
+        >
+          👥 Social
+        </router-link>
+      </nav>
+    </div>
+
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-gray-900">EcoTrack Community</h1>
       <p class="mt-2 text-gray-600">Connect, share, and inspire eco-friendly actions together</p>
@@ -450,6 +492,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notifications'
 import socialApi from '@/services/social'
+import { enterpriseService as enterpriseApi } from '@/services/enterprise'
 
 const authStore = useAuthStore()
 const notificationStore = useNotificationStore()
@@ -470,12 +513,12 @@ const communityLeaders = ref([])
 
 const currentUser = computed(() => authStore.user)
 
-const communityTabs = [
+const communityTabs = computed(() => [
   { key: 'feed', name: 'Activity Feed', icon: '🌍', count: null },
-  { key: 'challenges', name: 'Challenges', icon: '🎯', count: 12 },
-  { key: 'events', name: 'Events', icon: '📅', count: 5 },
-  { key: 'groups', name: 'Groups', icon: '👥', count: 8 }
-]
+  { key: 'challenges', name: 'Challenges', icon: '🎯', count: communityChallenges.value.length },
+  { key: 'events', name: 'Events', icon: '📅', count: communityEvents.value.length },
+  { key: 'groups', name: 'Groups', icon: '👥', count: communityGroups.value.length }
+])
 
 const loadSocialData = async () => {
   try {
@@ -499,7 +542,42 @@ const loadSocialData = async () => {
       communityLeaders.value = (leaderboardDetail.entries || []).slice(0, 5)
     }
     
-    // Mock data for events and groups (since no API exists yet)
+    // Load real groups data from organizations
+    try {
+      const organizations = await enterpriseApi.getOrganizations()
+      communityGroups.value = (organizations.results || organizations || []).map(org => ({
+        id: org.id,
+        name: org.name,
+        description: `${org.industry || 'Sustainability'} organization focused on eco-friendly practices`,
+        members: Math.floor(Math.random() * 500) + 50, // Mock member count for now
+        posts: Math.floor(Math.random() * 200) + 10, // Mock post count for now
+        isJoined: false,
+        logo: org.logo,
+        industry: org.industry
+      }))
+    } catch (error) {
+      console.log('Unable to load organizations, using mock groups data')
+      communityGroups.value = [
+        {
+          id: 1,
+          name: 'Urban Gardeners',
+          description: 'Tips and tricks for city gardening',
+          members: 1240,
+          posts: 89,
+          isJoined: false
+        },
+        {
+          id: 2,
+          name: 'Zero Waste Living',
+          description: 'Living plastic-free and waste-free',
+          members: 2100,
+          posts: 156,
+          isJoined: true
+        }
+      ]
+    }
+    
+    // Mock events data (can be updated when events API is available)
     communityEvents.value = [
       {
         id: 1,
@@ -511,25 +589,28 @@ const loadSocialData = async () => {
         time: '9:00 AM',
         attendees: 87,
         isAttending: false
-      }
-    ]
-    
-    communityGroups.value = [
-      {
-        id: 1,
-        name: 'Urban Gardeners',
-        description: 'Tips and tricks for city gardening',
-        members: 1240,
-        posts: 89,
-        isJoined: false
       },
       {
         id: 2,
-        name: 'Zero Waste Living',
-        description: 'Living plastic-free and waste-free',
-        members: 2100,
-        posts: 156,
-        isJoined: true
+        title: 'Sustainability Workshop',
+        description: 'Learn about renewable energy solutions',
+        day: '22',
+        month: 'SEP',
+        location: 'Community Center',
+        time: '2:00 PM',
+        attendees: 45,
+        isAttending: false
+      },
+      {
+        id: 3,
+        title: 'Beach Cleanup Drive',
+        description: 'Help clean our local beaches',
+        day: '28',
+        month: 'SEP',
+        location: 'Marina Beach',
+        time: '8:00 AM',
+        attendees: 120,
+        isAttending: true
       }
     ]
     

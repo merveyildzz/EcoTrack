@@ -110,7 +110,7 @@
           <div class="card mb-6">
             <div class="flex items-center justify-between mb-6">
               <h3 class="text-lg font-semibold text-gray-900">CO₂ Emissions Trend</h3>
-              <div class="flex space-x-2">
+              <div class="flex space-x-2" v-if="trendData.length > 0">
                 <button 
                   v-for="period in ['7D', '30D', '90D']" 
                   :key="period"
@@ -124,8 +124,35 @@
                 </button>
               </div>
             </div>
-            <div class="h-64">
+            
+            <!-- Chart with data -->
+            <div v-if="trendData.length > 0" class="h-64">
               <TrendChart :data="trendData" :period="chartPeriod" />
+            </div>
+            
+            <!-- Empty state with motivation -->
+            <div v-else class="h-64 flex items-center justify-center">
+              <div class="text-center py-12">
+                <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <span class="text-4xl">🌱</span>
+                </div>
+                <h4 class="text-xl font-semibold text-gray-900 mb-3">Ready to Start Your Eco Journey?</h4>
+                <p class="text-gray-600 mb-6 max-w-md mx-auto">
+                  Your CO₂ trend isn't available yet, but every small action counts! 
+                  Log your first eco-friendly activity to see your environmental impact grow.
+                </p>
+                <div class="space-y-3">
+                  <router-link
+                    to="/log-activity"
+                    class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+                  >
+                    🚀 Let's Get Started
+                  </router-link>
+                  <div class="text-sm text-gray-500">
+                    Start with simple actions like walking, cycling, or using public transport
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -169,6 +196,68 @@
                   <p class="text-sm text-gray-600">Update dashboard</p>
                 </div>
               </button>
+            </div>
+          </div>
+
+          <!-- AI Recommendations -->
+          <div class="card">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                🤖 AI Insights
+                <span class="ml-2 px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full">Powered by AI</span>
+              </h3>
+              <button 
+                @click="generateAIRecommendation"
+                class="text-purple-600 hover:text-purple-800 text-sm"
+                :disabled="isLoadingAI"
+              >
+                {{ isLoadingAI ? '⏳' : '🔄' }} {{ isLoadingAI ? 'Generating...' : 'New Tip' }}
+              </button>
+            </div>
+            
+            <div v-if="currentAIRecommendation" class="space-y-4">
+              <div class="bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded-lg border border-purple-200">
+                <div class="flex items-start space-x-3">
+                  <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="text-purple-600 text-sm">💡</span>
+                  </div>
+                  <div class="flex-1">
+                    <h4 class="font-medium text-gray-900 mb-2">{{ currentAIRecommendation.title || 'AI Recommendation' }}</h4>
+                    <p class="text-gray-700 text-sm mb-3">{{ currentAIRecommendation.content }}</p>
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs text-gray-500">✨ AI-generated just for you</span>
+                      <div class="flex space-x-2">
+                        <button 
+                          @click="rateAIRecommendation(currentAIRecommendation.id, 5)"
+                          class="text-green-600 hover:text-green-800 text-sm"
+                        >👍</button>
+                        <button 
+                          @click="rateAIRecommendation(currentAIRecommendation.id, 1)"
+                          class="text-red-600 hover:text-red-800 text-sm"
+                        >👎</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div v-else-if="!isLoadingAI" class="text-center py-6">
+              <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <span class="text-2xl">🤖</span>
+              </div>
+              <p class="text-gray-600 text-sm mb-3">Get personalized eco-tips powered by AI</p>
+              <button 
+                @click="generateAIRecommendation"
+                class="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 transition-colors"
+              >
+                🚀 Get AI Recommendation
+              </button>
+            </div>
+            
+            <div v-if="isLoadingAI" class="text-center py-6">
+              <div class="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+              <p class="text-gray-600 text-sm">AI is analyzing your data...</p>
             </div>
           </div>
 
@@ -351,6 +440,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useActivitiesStore } from '@/stores/activities'
 import { useNotificationStore } from '@/stores/notifications'
 import socialApi from '@/services/social'
+import aiService from '@/services/ai'
 import TrendChart from '@/components/TrendChart.vue'
 import CategoryChart from '@/components/CategoryChart.vue'
 
@@ -364,6 +454,11 @@ const chartPeriod = ref('7D')
 const socialStats = ref(null)
 const recentBadges = ref([])
 const activeChallenges = ref([])
+
+// AI data
+const currentAIRecommendation = ref(null)
+const isLoadingAI = ref(false)
+const aiStatus = ref(null)
 
 const dashboardData = computed(() => activitiesStore.dashboardData)
 const recentActivities = computed(() => dashboardData.value?.recent_activities || [])
@@ -458,11 +553,54 @@ const loadSocialData = async () => {
   }
 }
 
+// AI Functions
+const generateAIRecommendation = async () => {
+  isLoadingAI.value = true
+  try {
+    const response = await aiService.generateRecommendation('daily_tip')
+    currentAIRecommendation.value = response.recommendation
+    notificationStore.success('New AI recommendation generated!')
+  } catch (error) {
+    console.error('Failed to generate AI recommendation:', error)
+    notificationStore.error('Failed to generate AI recommendation. Make sure AI features are enabled.')
+  } finally {
+    isLoadingAI.value = false
+  }
+}
+
+const rateAIRecommendation = async (recommendationId, rating) => {
+  try {
+    await aiService.submitFeedback(recommendationId, rating)
+    notificationStore.success(rating >= 4 ? 'Thanks for the positive feedback!' : 'Thanks for your feedback!')
+  } catch (error) {
+    console.error('Failed to rate recommendation:', error)
+    notificationStore.error('Failed to submit rating')
+  }
+}
+
+const loadAIData = async () => {
+  try {
+    // Load AI status
+    aiStatus.value = await aiService.getStatus()
+    
+    // Load recent recommendations if AI is enabled
+    if (aiStatus.value?.ai_enabled) {
+      const recommendations = await aiService.getRecommendations({ is_read: false })
+      if (recommendations.length > 0) {
+        currentAIRecommendation.value = recommendations[0]
+      }
+    }
+  } catch (error) {
+    console.log('AI features not available or disabled')
+  }
+}
+
 onMounted(async () => {
   try {
     await Promise.all([
       activitiesStore.fetchDashboard(),
-      loadSocialData()
+      loadSocialData(),
+      loadAIData()
     ])
   } catch (error) {
     notificationStore.error('Failed to load dashboard data')

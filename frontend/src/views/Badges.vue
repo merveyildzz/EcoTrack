@@ -1,5 +1,47 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Community Navigation -->
+    <div class="mb-6">
+      <nav class="flex space-x-1 bg-gray-100 rounded-lg p-1" aria-label="Community sections">
+        <router-link
+          to="/leaderboards"
+          class="flex-1 text-center px-4 py-2 text-sm font-medium rounded-md transition-colors"
+          :class="$route.path === '/leaderboards' 
+            ? 'bg-white text-gray-900 shadow-sm' 
+            : 'text-gray-600 hover:text-gray-900'"
+        >
+          🏅 Leaderboards
+        </router-link>
+        <router-link
+          to="/challenges"
+          class="flex-1 text-center px-4 py-2 text-sm font-medium rounded-md transition-colors"
+          :class="$route.path === '/challenges' 
+            ? 'bg-white text-gray-900 shadow-sm' 
+            : 'text-gray-600 hover:text-gray-900'"
+        >
+          🏆 Challenges
+        </router-link>
+        <router-link
+          to="/badges"
+          class="flex-1 text-center px-4 py-2 text-sm font-medium rounded-md transition-colors"
+          :class="$route.path === '/badges' 
+            ? 'bg-white text-gray-900 shadow-sm' 
+            : 'text-gray-600 hover:text-gray-900'"
+        >
+          🎖️ Badges
+        </router-link>
+        <router-link
+          to="/social"
+          class="flex-1 text-center px-4 py-2 text-sm font-medium rounded-md transition-colors"
+          :class="$route.path === '/social' 
+            ? 'bg-white text-gray-900 shadow-sm' 
+            : 'text-gray-600 hover:text-gray-900'"
+        >
+          👥 Social
+        </router-link>
+      </nav>
+    </div>
+
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-gray-900">Achievements & Badges</h1>
       <p class="mt-2 text-gray-600">Track your progress and earn rewards for your eco-friendly actions</p>
@@ -238,6 +280,43 @@ const getBadgeIcon = (badge) => {
     return badge.icon
   }
   
+  // Specific badge name icons
+  const nameIcons = {
+    'Planet Protector': '🌍',
+    'Eco Legend': '👑',
+    'Green Champion': '🏆',
+    'Carbon Saver': '🌿',
+    'Sustainability Star': '⭐',
+    'Earth Warrior': '⚔️',
+    'Climate Hero': '🦸',
+    'Nature Guardian': '🛡️',
+    'Green Pioneer': '🚀',
+    'Eco Enthusiast': '💚',
+    'Environmental Leader': '👨‍💼',
+    'Renewable Energy Expert': '⚡',
+    'Water Conservationist': '💧',
+    'Waste Reduction Master': '♻️',
+    'Bike Commuter': '🚲',
+    'Public Transport Champion': '🚌',
+    'Electric Vehicle Owner': '🔋',
+    'Solar Power User': '☀️',
+    'Tree Hugger': '🌳',
+    'Recycling Pro': '🗂️',
+    'Energy Saver': '💡',
+    'Greenhouse Gas Reducer': '🏭',
+    'Sustainable Shopper': '🛒',
+    'Composting Expert': '🌱',
+    'Zero Waste Warrior': '🚯',
+    'Ultimate Champion': '👑',
+    'Victory Master': '🏆',
+    'Flame Keeper': '🔥'
+  }
+  
+  if (nameIcons[badge.name]) {
+    return nameIcons[badge.name]
+  }
+  
+  // Fallback to type-based icons
   const typeIcons = {
     'activity_count': '📊',
     'co2_reduction': '🌱', 

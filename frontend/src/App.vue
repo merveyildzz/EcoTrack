@@ -29,32 +29,20 @@
               Activities
             </router-link>
             <router-link 
-              to="/challenges" 
-              class="text-gray-700 hover:text-primary-600 px-3 py-2 text-sm font-medium transition-colors"
-              :class="{ 'text-primary-600 border-b-2 border-primary-600': $route.path === '/challenges' }"
-            >
-              Challenges
-            </router-link>
-            <router-link 
               to="/leaderboards" 
               class="text-gray-700 hover:text-primary-600 px-3 py-2 text-sm font-medium transition-colors"
-              :class="{ 'text-primary-600 border-b-2 border-primary-600': $route.path === '/leaderboards' }"
+              :class="{ 'text-primary-600 border-b-2 border-primary-600': ['leaderboards', 'challenges', 'badges', 'social'].some(path => $route.path.includes(path)) }"
             >
-              Leaderboards
+              Community
             </router-link>
             <router-link 
-              to="/badges" 
-              class="text-gray-700 hover:text-primary-600 px-3 py-2 text-sm font-medium transition-colors"
-              :class="{ 'text-primary-600 border-b-2 border-primary-600': $route.path === '/badges' }"
+              to="/ai-assistant" 
+              class="text-purple-700 hover:text-purple-600 px-3 py-2 text-sm font-medium transition-colors flex items-center space-x-1"
+              :class="{ 'text-purple-600 border-b-2 border-purple-600': $route.path === '/ai-assistant' }"
             >
-              Badges
-            </router-link>
-            <router-link 
-              to="/social" 
-              class="text-gray-700 hover:text-primary-600 px-3 py-2 text-sm font-medium transition-colors"
-              :class="{ 'text-primary-600 border-b-2 border-primary-600': $route.path === '/social' }"
-            >
-              Social
+              <span>🤖</span>
+              <span>AI Assistant</span>
+              <span class="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full">New</span>
             </router-link>
             <router-link 
               v-if="isAdmin"
@@ -111,36 +99,21 @@
             📝 Activities
           </router-link>
           <router-link 
-            to="/challenges" 
-            @click="mobileMenuOpen = false"
-            class="block px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md"
-            :class="{ 'text-primary-600 bg-primary-50': $route.path === '/challenges' }"
-          >
-            🏆 Challenges
-          </router-link>
-          <router-link 
             to="/leaderboards" 
             @click="mobileMenuOpen = false"
             class="block px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md"
-            :class="{ 'text-primary-600 bg-primary-50': $route.path === '/leaderboards' }"
+            :class="{ 'text-primary-600 bg-primary-50': ['leaderboards', 'challenges', 'badges', 'social'].some(path => $route.path.includes(path)) }"
           >
-            🏅 Leaderboards
+            🏅 Community
           </router-link>
           <router-link 
-            to="/badges" 
+            to="/ai-assistant" 
             @click="mobileMenuOpen = false"
-            class="block px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md"
-            :class="{ 'text-primary-600 bg-primary-50': $route.path === '/badges' }"
+            class="block px-3 py-2 text-sm font-medium text-purple-700 hover:text-purple-600 hover:bg-purple-50 rounded-md flex items-center justify-between"
+            :class="{ 'text-purple-600 bg-purple-50': $route.path === '/ai-assistant' }"
           >
-            🎖️ Badges
-          </router-link>
-          <router-link 
-            to="/social" 
-            @click="mobileMenuOpen = false"
-            class="block px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md"
-            :class="{ 'text-primary-600 bg-primary-50': $route.path === '/social' }"
-          >
-            👥 Social
+            <span>🤖 AI Assistant</span>
+            <span class="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full">New</span>
           </router-link>
           <router-link 
             v-if="isAdmin"

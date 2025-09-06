@@ -11,6 +11,7 @@ const Challenges = () => import('@/views/Challenges.vue')
 const Leaderboards = () => import('@/views/Leaderboards.vue')
 const Badges = () => import('@/views/Badges.vue')
 const Social = () => import('@/views/Social.vue')
+const AIAssistant = () => import('@/views/AIAssistant.vue')
 const Profile = () => import('@/views/Profile.vue')
 const Enterprise = () => import('@/views/Enterprise.vue')
 const AdminDashboard = () => import('@/views/AdminDashboard.vue')
@@ -72,6 +73,12 @@ const routes = [
     path: '/social',
     name: 'Social',
     component: Social,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/ai-assistant',
+    name: 'AIAssistant',
+    component: AIAssistant,
     meta: { requiresAuth: true }
   },
   {
