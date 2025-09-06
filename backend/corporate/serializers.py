@@ -110,3 +110,9 @@ class DashboardStatsSerializer(serializers.Serializer):
     total_co2_saved = serializers.DecimalField(max_digits=15, decimal_places=3)
     active_challenges = serializers.IntegerField()
     recent_activities_count = serializers.IntegerField()
+    # Admin-specific fields
+    user_growth = serializers.IntegerField(required=False)
+    active_sessions = serializers.IntegerField(required=False)
+    daily_activities = serializers.IntegerField(required=False)
+    storage_used = serializers.CharField(required=False)
+    api_calls = serializers.IntegerField(required=False)

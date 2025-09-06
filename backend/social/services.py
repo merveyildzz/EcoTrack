@@ -169,6 +169,39 @@ class ChallengeService:
     """Service for managing challenges"""
     
     @staticmethod
+    def update_user_progress(user):
+        """Update user's progress in all challenges"""
+        try:
+            # Get user's active challenge participations
+            participations = ChallengeParticipation.objects.filter(
+                user=user,
+                is_active=True,
+                challenge__is_active=True,
+                challenge__start_date__lte=timezone.now(),
+                challenge__end_date__gte=timezone.now()
+            ).select_related('challenge')
+            
+            for participation in participations:
+                challenge = participation.challenge
+                new_progress = ChallengeService._calculate_progress(
+                    user, challenge, None, 0
+                )
+                
+                if new_progress > participation.current_progress:
+                    old_progress = participation.current_progress
+                    participation.update_progress(new_progress)
+                    
+                    # Check if challenge was just completed
+                    if participation.is_completed and old_progress < challenge.goal_value:
+                        # Update user stats
+                        stats, _ = UserStats.objects.get_or_create(user=user)
+                        stats.challenges_completed += 1
+                        stats.save()
+            
+        except Exception as e:
+            logger.error(f"Error updating user progress for {user.email}: {e}")
+    
+    @staticmethod
     def update_user_challenges(user, activity, carbon_saved):
         """Update user's progress in all active challenges"""
         try:
@@ -340,6 +373,52 @@ class LeaderboardService:
                 
         except Exception as e:
             logger.error(f"Error updating leaderboards for user {user.email}: {e}")
+    
+    @staticmethod
+    def update_leaderboard(leaderboard: Leaderboard):
+        """Update all entries for a specific leaderboard"""
+        try:
+            # Get time period for this leaderboard
+            period_start, period_end = LeaderboardService._get_period_dates(leaderboard.time_period)
+            
+            # Get all users who have stats
+            users_with_stats = UserStats.objects.select_related('user').all()
+            
+            # Update entries for all users
+            for stats in users_with_stats:
+                user = stats.user
+                
+                # Calculate user's score
+                score = LeaderboardService._calculate_score(user, leaderboard)
+                
+                # Skip users with 0 score unless it's a streak leaderboard where 0 is valid
+                if score == 0 and leaderboard.metric_type != 'streak_days':
+                    continue
+                
+                # Get or create entry
+                entry, created = LeaderboardEntry.objects.get_or_create(
+                    leaderboard=leaderboard,
+                    user=user,
+                    period_start=period_start,
+                    defaults={
+                        'score': score,
+                        'period_end': period_end,
+                        'rank': 999999  # Temporary rank
+                    }
+                )
+                
+                if not created:
+                    entry.previous_rank = entry.rank
+                    entry.score = score
+                    entry.period_end = period_end
+                    entry.save()
+            
+            # Recalculate rankings for this leaderboard
+            LeaderboardService._recalculate_rankings(leaderboard, period_start)
+            
+        except Exception as e:
+            logger.error(f"Error updating leaderboard {leaderboard.name}: {e}")
+            raise
     
     @staticmethod
     def _update_leaderboard_entry(user, leaderboard: Leaderboard):

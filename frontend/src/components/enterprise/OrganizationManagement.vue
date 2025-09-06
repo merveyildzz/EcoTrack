@@ -257,7 +257,9 @@ export default {
   name: 'OrganizationManagement',
   components: {
     OrganizationModal,
-    BulkImportModal
+    BulkImportModal,
+    PlusIcon,
+    UploadIcon
   },
   setup() {
     const { showToast } = useToast()

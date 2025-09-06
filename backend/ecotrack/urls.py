@@ -50,6 +50,7 @@ urlpatterns = [
     path('api/v1/ai/', include('ai_recommendations.urls')),
     path('api/v1/social/', include('social.urls')),
     path('api/v1/corporate/', include('corporate.urls')),
+    path('api/v1/monitoring/', include('monitoring.urls')),
     
     # Health check
     path('health/', lambda request: JsonResponse({'status': 'OK'})),

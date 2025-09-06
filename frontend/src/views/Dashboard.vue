@@ -368,14 +368,8 @@ const activeChallenges = ref([])
 const dashboardData = computed(() => activitiesStore.dashboardData)
 const recentActivities = computed(() => dashboardData.value?.recent_activities || [])
 
-// Mock data for charts - in a real app this would come from the API
 const trendData = computed(() => {
-  // Generate sample trend data based on period
-  const days = chartPeriod.value === '7D' ? 7 : chartPeriod.value === '30D' ? 30 : 90
-  return Array.from({ length: days }, (_, i) => ({
-    date: new Date(Date.now() - (days - 1 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    co2: Math.random() * 10 + 5
-  }))
+  return dashboardData.value?.trend_data || []
 })
 
 const categoryData = computed(() => {
@@ -458,10 +452,6 @@ const loadSocialData = async () => {
     recentBadges.value = dashboard.recent_badges || []
     activeChallenges.value = dashboard.active_challenges || []
     
-    // Add mock global rank for demo
-    if (socialStats.value) {
-      socialStats.value.global_rank = Math.floor(Math.random() * 1000) + 1
-    }
   } catch (error) {
     console.error('Error loading social data:', error)
     // Don't show error notification for social data as it's not critical

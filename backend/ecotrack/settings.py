@@ -13,7 +13,7 @@ environ.Env.read_env(os.path.join(BASE_DIR.parent, '.env'))
 
 SECRET_KEY = env('SECRET_KEY', default='django-insecure-y$-ncixh558il59wa%x_)lau!w4*(&uo(#5cz+l_^p19snbsle')
 DEBUG = env('DEBUG')
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1', 'testserver'])
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'corporate',
     'ai_recommendations',
     'social',
+    'monitoring',
+    'experimentation',
 ]
 
 MIDDLEWARE = [
@@ -52,6 +54,15 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# Add monitoring middleware only in production
+if not DEBUG:
+    MIDDLEWARE.extend([
+        'ecotrack.middleware.SecurityHeadersMiddleware',
+        'ecotrack.middleware.RateLimitMiddleware',
+        'ecotrack.middleware.APILoggingMiddleware',
+        'ecotrack.middleware.HealthCheckMiddleware',
+    ])
 
 ROOT_URLCONF = 'ecotrack.urls'
 
@@ -240,3 +251,36 @@ REDOC_SETTINGS = {
 
 if DEBUG:
     os.makedirs(BASE_DIR / 'logs', exist_ok=True)
+
+# Security Settings
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+
+# Production Security (enabled when DEBUG=False)
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+else:
+    # Development settings - disable SSL redirect
+    SECURE_SSL_REDIRECT = False
+    # Explicitly disable HSTS in development
+    SECURE_HSTS_SECONDS = 0
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+    SECURE_HSTS_PRELOAD = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+
+# Version for health checks
+VERSION = '1.0.0'
+
+# Enhanced logging configuration
+try:
+    from ecotrack.logging import setup_logging
+    setup_logging()
+except ImportError:
+    pass  # Skip if logging module has issues

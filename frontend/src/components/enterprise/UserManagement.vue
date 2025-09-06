@@ -134,7 +134,7 @@
                     class="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center"
                   >
                     <span class="text-white font-medium">
-                      {{ user.first_name?.charAt(0) || user.email.charAt(0).toUpperCase() }}
+                      {{ user.first_name?.charAt(0) || user.email?.charAt(0)?.toUpperCase() || 'U' }}
                     </span>
                   </div>
                   <div class="ml-4">

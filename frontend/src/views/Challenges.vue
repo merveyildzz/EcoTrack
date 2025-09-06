@@ -139,7 +139,7 @@
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div v-for="(leader, index) in topUsers" :key="leader.id" class="text-center">
+          <div v-for="(leader, index) in topUsers" :key="leader.user.id" class="text-center">
             <div 
               class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3"
               :class="index === 0 
@@ -150,9 +150,9 @@
             >
               <span class="text-2xl">{{ ['🥇', '🥈', '🥉'][index] }}</span>
             </div>
-            <h3 class="font-semibold text-gray-900">{{ leader.name }}</h3>
-            <p class="text-sm text-gray-600">{{ leader.co2Saved }}kg CO₂ saved</p>
-            <p class="text-xs text-gray-500">{{ leader.country }}</p>
+            <h3 class="font-semibold text-gray-900">{{ leader.user.first_name }} {{ leader.user.last_name }}</h3>
+            <p class="text-sm text-gray-600">{{ leader.score }}kg CO₂ saved</p>
+            <p class="text-xs text-gray-500">Rank #{{ leader.position }}</p>
           </div>
         </div>
         
@@ -167,8 +167,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useNotificationStore } from '@/stores/notifications'
+import socialApi from '@/services/social'
 
 const notificationStore = useNotificationStore()
 
@@ -182,123 +183,68 @@ const challengeCategories = [
   { value: 'waste', label: 'Waste', icon: '♻️' }
 ]
 
-// Mock data - in real app this would come from API
-const activeChallenges = ref([
-  {
-    id: 1,
-    title: 'Car-Free Week',
-    description: 'Avoid using personal vehicles for a full week',
-    icon: '🚲',
-    participants: 1247,
-    progress: 65,
-    daysLeft: 3,
-    currentValue: 4.5,
-    targetValue: 7,
-    unit: 'days'
-  }
-])
+const activeChallenges = ref([])
+const availableChallenges = ref([])
+const topUsers = ref([])
+const isLoading = ref(true)
 
-const availableChallenges = [
-  {
-    id: 2,
-    title: 'Energy Saver',
-    description: 'Reduce home energy consumption by 20% this month',
-    icon: '💡',
-    category: 'energy',
-    participants: 892,
-    difficulty: 'medium',
-    targetValue: 20,
-    unit: '% reduction',
-    duration: 30,
-    reward: '50 points'
-  },
-  {
-    id: 3,
-    title: 'Plant-Based Week',
-    description: 'Eat only plant-based meals for 7 consecutive days',
-    icon: '🌱',
-    category: 'food',
-    participants: 2156,
-    difficulty: 'easy',
-    targetValue: 7,
-    unit: 'days',
-    duration: 7,
-    reward: '30 points'
-  },
-  {
-    id: 4,
-    title: 'Zero Waste Champion',
-    description: 'Produce no single-use plastic waste for 2 weeks',
-    icon: '🗑️',
-    category: 'waste',
-    participants: 543,
-    difficulty: 'hard',
-    targetValue: 14,
-    unit: 'days',
-    duration: 14,
-    reward: '100 points'
-  },
-  {
-    id: 5,
-    title: 'Public Transport Hero',
-    description: 'Use only public transport or walk/bike for all trips',
-    icon: '🚌',
-    category: 'transport',
-    participants: 1834,
-    difficulty: 'medium',
-    targetValue: 21,
-    unit: 'days',
-    duration: 21,
-    reward: '75 points'
-  },
-  {
-    id: 6,
-    title: 'Solar Power Month',
-    description: 'Use renewable energy sources for 80% of consumption',
-    icon: '☀️',
-    category: 'energy',
-    participants: 421,
-    difficulty: 'hard',
-    targetValue: 80,
-    unit: '% renewable',
-    duration: 30,
-    reward: '150 points'
-  }
-]
-
-const topUsers = [
-  { id: 1, name: 'Alex Green', co2Saved: 1250, country: '🇺🇸 USA' },
-  { id: 2, name: 'Maria Silva', co2Saved: 1180, country: '🇧🇷 Brazil' },
-  { id: 3, name: 'Chen Wei', co2Saved: 1156, country: '🇨🇳 China' }
-]
 
 const filteredChallenges = computed(() => {
   if (selectedCategory.value === 'all') {
-    return availableChallenges
+    return availableChallenges.value
   }
-  return availableChallenges.filter(challenge => challenge.category === selectedCategory.value)
+  return availableChallenges.value.filter(challenge => challenge.category === selectedCategory.value)
 })
 
 const joinChallenge = async (challenge) => {
   try {
-    // In real app, this would call the API
+    await socialApi.joinChallenge(challenge.id)
     notificationStore.success(`Joined "${challenge.title}" challenge! Good luck! 🎯`)
     
-    // Move challenge to active challenges
-    activeChallenges.value.push({
-      ...challenge,
-      progress: 0,
-      daysLeft: challenge.duration,
-      currentValue: 0
-    })
-    
-    // Remove from available challenges
-    const index = availableChallenges.findIndex(c => c.id === challenge.id)
-    if (index > -1) {
-      availableChallenges.splice(index, 1)
-    }
+    // Refresh challenges data
+    await loadChallenges()
   } catch (error) {
+    console.error('Error joining challenge:', error)
     notificationStore.error('Failed to join challenge. Please try again.')
   }
 }
+
+const loadChallenges = async () => {
+  try {
+    const [availableChallengesResponse, userChallengesResponse] = await Promise.all([
+      socialApi.getChallenges(),
+      socialApi.getUserChallenges()
+    ])
+    
+    availableChallenges.value = availableChallengesResponse.results || availableChallengesResponse
+    activeChallenges.value = userChallengesResponse.results || userChallengesResponse
+  } catch (error) {
+    console.error('Error loading challenges:', error)
+    notificationStore.error('Failed to load challenges')
+  }
+}
+
+const loadLeaderboard = async () => {
+  try {
+    const leaderboards = await socialApi.getLeaderboards()
+    if (leaderboards.results && leaderboards.results.length > 0) {
+      const globalLeaderboard = leaderboards.results[0]
+      const leaderboardDetail = await socialApi.getLeaderboard(globalLeaderboard.id)
+      topUsers.value = leaderboardDetail.entries?.slice(0, 3) || []
+    }
+  } catch (error) {
+    console.error('Error loading leaderboard:', error)
+  }
+}
+
+onMounted(async () => {
+  try {
+    await Promise.all([
+      loadChallenges(),
+      loadLeaderboard()
+    ])
+  } finally {
+    isLoading.value = false
+  }
+})
 </script>

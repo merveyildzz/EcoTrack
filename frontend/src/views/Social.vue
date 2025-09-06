@@ -477,127 +477,72 @@ const communityTabs = [
   { key: 'groups', name: 'Groups', icon: '👥', count: 8 }
 ]
 
-// Mock data initialization
-const initializeMockData = () => {
-  // Mock feed posts
-  feedPosts.value = [
-    {
-      id: 1,
-      user: { id: 1, first_name: 'Sarah', last_name: 'Green', avatar: null, verified: true },
-      content: 'Just completed my first month of cycling to work! The fresh air and exercise make such a difference to my day.',
-      created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      achievement: {
-        type: 'streak',
-        title: '30-Day Cycling Streak',
-        description: 'Cycled to work for 30 consecutive days',
-        co2_saved: 45.5,
-        points: 500
+const loadSocialData = async () => {
+  try {
+    // Load feed posts
+    const feed = await socialApi.getSocialFeed()
+    feedPosts.value = feed.results || []
+    
+    // Load challenges
+    const challenges = await socialApi.getChallenges()
+    communityChallenges.value = (challenges.results || []).slice(0, 6)
+    
+    // Load user stats
+    const stats = await socialApi.getUserStats()
+    userStats.value = stats
+    
+    // Load leaderboard for community leaders
+    const leaderboards = await socialApi.getLeaderboards()
+    if (leaderboards.results && leaderboards.results.length > 0) {
+      const globalLeaderboard = leaderboards.results[0]
+      const leaderboardDetail = await socialApi.getLeaderboard(globalLeaderboard.id)
+      communityLeaders.value = (leaderboardDetail.entries || []).slice(0, 5)
+    }
+    
+    // Mock data for events and groups (since no API exists yet)
+    communityEvents.value = [
+      {
+        id: 1,
+        title: 'Community Tree Planting',
+        description: 'Join us for a morning of tree planting in Central Park',
+        day: '15',
+        month: 'SEP',
+        location: 'Central Park',
+        time: '9:00 AM',
+        attendees: 87,
+        isAttending: false
+      }
+    ]
+    
+    communityGroups.value = [
+      {
+        id: 1,
+        name: 'Urban Gardeners',
+        description: 'Tips and tricks for city gardening',
+        members: 1240,
+        posts: 89,
+        isJoined: false
       },
-      likes: 24,
-      comments: 8,
-      shares: 3,
-      isLiked: false,
-      is_featured: true
-    },
-    {
-      id: 2,
-      user: { id: 2, first_name: 'Marcus', last_name: 'Chen', avatar: null },
-      content: 'Switched to renewable energy for my home today! Every small step counts towards our planet\'s future. 🌱',
-      created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-      achievement: {
-        type: 'milestone',
-        title: 'Green Energy Hero',
-        description: 'Switched to 100% renewable energy',
-        co2_saved: 120.0,
-        points: 1000
-      },
-      likes: 42,
-      comments: 12,
-      shares: 7,
-      isLiked: true
-    }
-  ]
-
-  // Mock challenges
-  communityChallenges.value = [
-    {
-      id: 1,
-      title: 'Plastic-Free Week',
-      description: 'Reduce single-use plastic for 7 days',
-      status: 'Active',
-      progress: 65,
-      participants: 234,
-      timeLeft: '3 days',
-      isJoined: false
-    },
-    {
-      id: 2,
-      title: 'Car-Free Challenge',
-      description: 'Use alternative transport for a month',
-      status: 'Active',
-      progress: 82,
-      participants: 156,
-      timeLeft: '12 days',
-      isJoined: true
-    }
-  ]
-
-  // Mock events
-  communityEvents.value = [
-    {
-      id: 1,
-      title: 'Community Tree Planting',
-      description: 'Join us for a morning of tree planting in Central Park',
-      day: '15',
-      month: 'SEP',
-      location: 'Central Park',
-      time: '9:00 AM',
-      attendees: 87,
-      isAttending: false
-    }
-  ]
-
-  // Mock groups
-  communityGroups.value = [
-    {
-      id: 1,
-      name: 'Urban Gardeners',
-      description: 'Tips and tricks for city gardening',
-      members: 1240,
-      posts: 89,
-      isJoined: false
-    },
-    {
-      id: 2,
-      name: 'Zero Waste Living',
-      description: 'Living plastic-free and waste-free',
-      members: 2100,
-      posts: 156,
-      isJoined: true
-    }
-  ]
-
-  // Mock user stats
-  userStats.value = {
-    weekly_co2: 23.5,
-    activities: 12,
-    streak: 7,
-    rank: 156
+      {
+        id: 2,
+        name: 'Zero Waste Living',
+        description: 'Living plastic-free and waste-free',
+        members: 2100,
+        posts: 156,
+        isJoined: true
+      }
+    ]
+    
+    trendingTopics.value = [
+      { id: 1, tag: 'PlasticFree', posts: 89, growth: '+12%' },
+      { id: 2, tag: 'Cycling', posts: 67, growth: '+8%' },
+      { id: 3, tag: 'SolarPower', posts: 45, growth: '+15%' }
+    ]
+    
+  } catch (error) {
+    console.error('Error loading social data:', error)
+    notificationStore.error('Failed to load social data')
   }
-
-  // Mock trending topics
-  trendingTopics.value = [
-    { id: 1, tag: 'PlasticFree', posts: 89, growth: '+12%' },
-    { id: 2, tag: 'Cycling', posts: 67, growth: '+8%' },
-    { id: 3, tag: 'SolarPower', posts: 45, growth: '+15%' }
-  ]
-
-  // Mock community leaders
-  communityLeaders.value = [
-    { id: 1, first_name: 'Emma', last_name: 'Watson', total_co2: 234.5 },
-    { id: 2, first_name: 'David', last_name: 'Kim', total_co2: 198.2 },
-    { id: 3, first_name: 'Lisa', last_name: 'Rodriguez', total_co2: 176.8 }
-  ]
 }
 
 const getUserDisplayName = (user) => {
@@ -634,23 +579,29 @@ const getAchievementIcon = (type) => {
   return icons[type] || '⭐'
 }
 
-const sharePost = () => {
+const sharePost = async () => {
   if (!shareText.value.trim()) return
   
-  const newPost = {
-    id: Date.now(),
-    user: currentUser.value,
-    content: shareText.value,
-    created_at: new Date().toISOString(),
-    likes: 0,
-    comments: 0,
-    shares: 0,
-    isLiked: false
+  try {
+    // In a real app, this would post to the API
+    const newPost = {
+      id: Date.now(),
+      user: currentUser.value,
+      content: shareText.value,
+      created_at: new Date().toISOString(),
+      likes: 0,
+      comments: 0,
+      shares: 0,
+      isLiked: false
+    }
+    
+    feedPosts.value.unshift(newPost)
+    shareText.value = ''
+    notificationStore.success('Post shared with the community!')
+  } catch (error) {
+    console.error('Error sharing post:', error)
+    notificationStore.error('Failed to share post')
   }
-  
-  feedPosts.value.unshift(newPost)
-  shareText.value = ''
-  notificationStore.success('Post shared with the community!')
 }
 
 const toggleLike = (post) => {
@@ -658,10 +609,16 @@ const toggleLike = (post) => {
   post.likes += post.isLiked ? 1 : -1
 }
 
-const joinChallenge = (challenge) => {
-  challenge.isJoined = true
-  challenge.participants += 1
-  notificationStore.success(`Joined ${challenge.title}!`)
+const joinChallenge = async (challenge) => {
+  try {
+    await socialApi.joinChallenge(challenge.id)
+    challenge.isJoined = true
+    challenge.participants += 1
+    notificationStore.success(`Joined ${challenge.title}!`)
+  } catch (error) {
+    console.error('Error joining challenge:', error)
+    notificationStore.error('Failed to join challenge')
+  }
 }
 
 const attendEvent = (event) => {
@@ -690,11 +647,7 @@ const organizeEvent = () => {
 
 onMounted(async () => {
   try {
-    // Initialize with mock data for now
-    initializeMockData()
-    
-    // In a real app, load data from API
-    // await loadCommunityData()
+    await loadSocialData()
   } finally {
     isLoading.value = false
   }

@@ -33,6 +33,29 @@ class IsCorporateManager(permissions.BasePermission):
 def dashboard_stats(request):
     """Get corporate dashboard statistics"""
     try:
+        from users.models import User
+        
+        # Check if user is admin (staff or superuser)
+        if request.user.is_staff or request.user.is_superuser:
+            # Return global platform stats for admins
+            stats = {
+                'total_organizations': Organization.objects.count(),
+                'total_users': User.objects.count(),
+                'total_teams': Team.objects.count(),
+                'total_co2_saved': 0,  # Would be calculated from activities
+                'active_challenges': Challenge.objects.filter(
+                    status='active'
+                ).count(),
+                'recent_activities_count': 0,  # Would be calculated from activities
+                'user_growth': 15,  # Mock percentage
+                'active_sessions': 24,  # Mock data
+                'daily_activities': 156,  # Mock data
+                'storage_used': '2.3 GB',  # Mock data
+                'api_calls': 8432,  # Mock data
+            }
+            serializer = DashboardStatsSerializer(stats)
+            return Response(serializer.data)
+        
         # Get user's organization
         membership = OrganizationMember.objects.filter(
             user=request.user, 
@@ -54,7 +77,7 @@ def dashboard_stats(request):
         
         org = membership.organization
         
-        # Calculate stats
+        # Calculate organization-specific stats
         stats = {
             'total_organizations': 1,  # Current user's org only
             'total_users': OrganizationMember.objects.filter(
@@ -172,6 +195,10 @@ class OrganizationViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
+        # Admin users can see all organizations, others only see their own
+        if self.request.user.is_staff or self.request.user.is_superuser:
+            return Organization.objects.all()
+        
         # Users can only see their own organization
         user_orgs = OrganizationMember.objects.filter(
             user=self.request.user, 
@@ -192,7 +219,12 @@ class OrganizationMemberViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        # Users can only see members from their organization
+        # Admin users can see all users, others only see their organization members
+        if self.request.user.is_staff or self.request.user.is_superuser:
+            # Admin users see all organization members (or all users if needed)
+            return OrganizationMember.objects.all().select_related('user', 'organization', 'invited_by')
+        
+        # Regular users can only see members from their organization
         user_orgs = OrganizationMember.objects.filter(
             user=self.request.user, 
             status='active'
@@ -203,9 +235,13 @@ class OrganizationMemberViewSet(viewsets.ModelViewSet):
         ).select_related('user', 'organization', 'invited_by')
     
     def get_permissions(self):
-        """Only admins/managers can manage members"""
+        """Admin users can do everything, managers can manage members in their org"""
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            self.permission_classes = [IsAuthenticated, IsCorporateManager]
+            # Staff/superuser can do anything, others need manager role
+            if self.request.user.is_staff or self.request.user.is_superuser:
+                self.permission_classes = [IsAuthenticated]
+            else:
+                self.permission_classes = [IsAuthenticated, IsCorporateManager]
         return super().get_permissions()
 
 
@@ -214,6 +250,10 @@ class TeamViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
+        # Admin users can see all teams, others only see their organization teams
+        if self.request.user.is_staff or self.request.user.is_superuser:
+            return Team.objects.all().select_related('manager', 'organization')
+        
         # Users can only see teams from their organization
         user_orgs = OrganizationMember.objects.filter(
             user=self.request.user, 
